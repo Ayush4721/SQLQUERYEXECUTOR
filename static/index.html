@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QueryPilot AI — Text to SQL</title>
+<style>
+:root{color-scheme:dark;--bg:#080d1b;--panel:#0e172b;--panel2:#101d35;--line:#233557;--muted:#91a3c7;--text:#eef3ff;--accent:#7067ff;--accent2:#4e8cff;--green:#4ee0b2;--red:#ff7285;--radius:18px}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 45% -20%,#1a2850 0,transparent 48%),var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #9b95ff;outline-offset:2px}
+.app{min-height:100vh}.topbar{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#080e1de8;position:sticky;top:0;z-index:5;backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:12px}.logo{height:42px;width:42px;border-radius:13px;background:linear-gradient(145deg,#887cff,#4b65ff);display:grid;place-items:center;font-size:22px;box-shadow:0 8px 24px #4d53ff35}.brand strong{font-size:19px;letter-spacing:-.4px}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:1px}.top-right{display:flex;align-items:center;gap:12px}.pill{border:1px solid #29395e;border-radius:999px;padding:8px 12px;color:#c8d5f7;font-size:12px}.dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:7px}
+.layout{display:grid;grid-template-columns:205px minmax(0,1fr);min-height:calc(100vh - 76px)}.sidebar{border-right:1px solid var(--line);padding:22px 13px;display:flex;flex-direction:column;gap:7px;background:#0a1120a8}.nav{display:flex;align-items:center;gap:12px;padding:12px 13px;color:#9eafd1;border-radius:11px;text-decoration:none;border:0;background:transparent;text-align:left}.nav.active,.nav:hover{background:linear-gradient(100deg,#4e53e9,#344caa);color:white}.nav .ico{font-size:17px;width:20px;text-align:center}.side-note{margin-top:auto;border:1px solid var(--line);border-radius:14px;padding:15px;color:#a9b9dc;background:#0e192d}.side-note b{display:block;color:#e8eeff;margin:7px 0}.main{padding:24px;max-width:1700px;width:100%;margin:0 auto}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin:0 0 20px}.eyebrow{color:#9c94ff;text-transform:uppercase;letter-spacing:1.6px;font-weight:750;font-size:10px}.page-head h1{font-size:clamp(25px,3vw,34px);letter-spacing:-1.2px;line-height:1.15;margin:7px 0 8px}.page-head p{margin:0;color:var(--muted);max-width:650px}.workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+.right-col{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start;position:static}
+.schema-card{grid-column:1/-1}.primary,.right-col{display:grid;gap:16px;min-width:0}.card{background:linear-gradient(145deg,#101b30f5,#0c1629f5);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:0 12px 40px #00000012}.hero{background:linear-gradient(115deg,#1d2456 0%,#101c3a 45%,#0d192d 100%);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;background:#6965ff18;right:-60px;top:-100px;filter:blur(4px)}.hero-row{display:flex;align-items:flex-start;gap:15px;position:relative;z-index:1}.hero-icon{width:54px;height:54px;border-radius:17px;background:linear-gradient(135deg,#8c80ff,#4b5bff);display:grid;place-items:center;font-size:27px;flex-shrink:0}.hero h2{font-size:25px;margin:0 0 6px;letter-spacing:-.7px}.hero p{color:#b9c7ef;margin:0;max-width:630px}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px;position:relative;z-index:1}.feature{border-top:1px solid #33436b;padding-top:13px;display:flex;gap:10px;align-items:center;color:#dce5ff}.feature .ficon{font-size:18px;background:#252f65;border:1px solid #414a8e;border-radius:12px;padding:9px}.feature small{display:block;color:#91a5d2;font-size:11px;margin-top:2px}
+.section-title{display:flex;align-items:center;gap:10px;font-weight:750;font-size:15px;margin:0 0 15px}.step{display:grid;place-items:center;background:#5559f5;color:white;width:28px;height:28px;border-radius:50%;font-size:13px;box-shadow:0 5px 14px #575bff35}.upload-zone{border:1px dashed #5369d7;border-radius:14px;padding:25px 16px;text-align:center;background:#0a1428;transition:.2s;cursor:pointer}.upload-zone.drag{background:#18244b;border-color:#9c94ff}.upload-symbol{font-size:28px;color:#8c85ff}.upload-zone strong{display:block;margin:6px 0 2px}.upload-zone p{color:var(--muted);font-size:12px;margin:0}.upload-zone .browse{color:#aaa5ff;text-decoration:underline}.file-meta{display:none;align-items:center;gap:11px;margin-top:12px;padding:11px 13px;background:#111f35;border:1px solid #2a4267;border-radius:12px}.file-meta.show{display:flex}.file-icon{background:#123c3d;color:#62edc6;padding:9px;border-radius:10px}.file-text{flex:1;min-width:0}.file-text b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.file-text small{color:var(--muted)}.text-btn{background:transparent;color:#aebdff;border:0;padding:5px}
+textarea{resize:vertical;min-height:82px;width:100%;border:1px solid #304365;border-radius:12px;background:#091426;color:var(--text);padding:14px 15px;line-height:1.6}textarea::placeholder{color:#7386aa}.query-tools{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:12px}.select-wrap{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.select-wrap select{background:#111f3b;color:#dbe5ff;border:1px solid #30436b;border-radius:10px;padding:10px 12px}.primary-btn{border:0;border-radius:11px;background:linear-gradient(100deg,#655bff,#426bf3);color:white;font-weight:750;padding:12px 18px;box-shadow:0 8px 20px #514eff2e;transition:transform .15s,filter .15s}.primary-btn:hover{filter:brightness(1.1);transform:translateY(-1px)}.primary-btn:disabled{opacity:.55;cursor:wait;transform:none}.secondary-btn{border:1px solid #304365;background:#111f35;color:#d6e1ff;border-radius:10px;padding:9px 12px}.examples{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}.chip{border:1px solid #2d4268;border-radius:999px;background:#0c1a30;color:#b9caff;padding:7px 11px;font-size:12px}.chip:hover{border-color:#827bff;color:white}.status{display:none;border-radius:11px;padding:12px 14px;margin-top:13px;font-size:13px}.status.show{display:block}.status.error{background:#361c2b;border:1px solid #733348;color:#ffb8c2}.status.info{background:#172747;border:1px solid #314c81;color:#c7d8ff}.status.success{background:#10332f;border:1px solid #24675d;color:#a5f5df}
+.result-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:13px}.result-head h3{margin:0;font-size:16px}.result-actions{display:flex;gap:7px}.result-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px}.stat{background:#101f38;border:1px solid #263c60;border-radius:10px;padding:9px 12px;color:#aebfe3;font-size:12px}.stat b{color:#edf3ff;margin-right:4px}
+.table-wrap {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: auto;
+    border: 1px solid #253a5d;
+    border-radius: 12px;
+    max-height: 390px;
+    overscroll-behavior-x: contain;
+}
+
+.data-table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: max-content;
+    font-size: 12px;
+    white-space: nowrap;
+}
+.data-table th{position:sticky;top:0;background:#172747;color:#c7d5fa;text-align:left;font-weight:700}.data-table th,.data-table td{padding:11px 13px;border-bottom:1px solid #223452}.data-table tr:last-child td{border-bottom:0}.data-table tbody tr:hover{background:#14233d}.empty{border:1px dashed #2b3f62;border-radius:13px;text-align:center;padding:30px 16px;color:#8ea3c9}.empty .robot{font-size:33px;margin-bottom:7px}.empty b{display:block;color:#dce6ff;font-size:14px}.empty small{display:block;margin-top:5px}.sql-box{margin-top:14px;border:1px solid #273b60;border-radius:12px;overflow:hidden}.sql-top{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#111f38;color:#aebfe4;font-size:12px}.sql-box pre{margin:0;padding:14px;overflow:auto;background:#091324;color:#a9c7ff;font:12px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.right-col .card{padding:17px}.side-title{display:flex;align-items:center;justify-content:space-between;font-weight:750;margin-bottom:14px}.badge{font-size:11px;border:1px solid #2b4267;background:#101f37;color:#b8c9f2;border-radius:999px;padding:4px 8px}.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.metric{background:#0b1629;border:1px solid #223756;border-radius:10px;text-align:center;padding:10px 3px}.metric b{display:block;font-size:16px}.metric small{color:var(--muted);font-size:10px}.schema-table{width:100%;border-collapse:collapse;font-size:11px}.schema-table th,.schema-table td{text-align:left;padding:8px;border-bottom:1px solid #203452}.schema-table th{color:#9eb2dc;background:#13223c}.schema-table td{color:#d2def8}.schema-table tr:last-child td{border-bottom:0}.schema-wrap{overflow:auto;border:1px solid #263b5c;border-radius:10px;max-height:260px}.examples-list{display:flex;flex-wrap:wrap;gap:8px}.tip{display:flex;gap:10px;color:#9eb2d7;font-size:12px}.tip span{font-size:20px}.tip b{color:#dce6ff;display:block;margin-bottom:3px}.footer{color:#64799e;font-size:11px;text-align:center;padding:22px 0 5px}
+@media(max-width:1100px){.workspace{grid-template-columns:minmax(0,1fr) 280px}.layout{grid-template-columns:70px minmax(0,1fr)}.sidebar{padding:18px 9px}.nav{justify-content:center;padding:12px 6px}.nav .label,.side-note{display:none}.nav .ico{font-size:19px}.main{padding:20px}}
+@media(max-width:800px){.workspace{grid-template-columns:1fr}.right-col{grid-template-columns:repeat(2,minmax(0,1fr))}.right-col .schema-card{grid-column:1/-1}.topbar{padding:0 16px}.main{padding:16px}.features{grid-template-columns:1fr}.feature{border-top:0;padding-top:0}.hero h2{font-size:22px}}
+@media(max-width:520px){.layout{grid-template-columns:1fr}.sidebar{position:sticky;top:76px;z-index:4;border-right:0;border-bottom:1px solid var(--line);padding:7px;display:flex;flex-direction:row;justify-content:space-around}.nav{flex:1;gap:5px;font-size:11px;flex-direction:column;padding:7px 4px}.nav .label{display:block}.nav .ico{font-size:16px}.main{padding:12px}.right-col{grid-template-columns:1fr}.right-col .schema-card{grid-column:auto}.card{padding:15px}.page-head{display:block}.top-right .pill{display:none}.hero-row{gap:10px}.hero-icon{width:43px;height:43px;font-size:22px}.query-tools{align-items:stretch}.select-wrap{flex:1;justify-content:space-between}.select-wrap select{max-width:65%}.primary-btn{width:100%}.result-head{align-items:flex-start}.result-actions{flex-direction:column}.upload-zone{padding:20px 10px}}
+
+.primary,
+.primary > .card,
+.workspace,
+.result-head,
+#results {
+    min-width: 0;
+    max-width: 100%;
+}
+
+#results {
+    overflow: hidden;
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="logo">⌘</div><div><strong>QueryPilot <span style="color:#9188ff">AI</span></strong><small>Ask your data. Get answers.</small></div></div>
+  <div class="top-right"><div class="pill"><span class="dot"></span>API workspace</div><div class="pill">✦ Powered by Gemini</div></div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <button class="nav active" data-view="home"><span class="ico">⌂</span><span class="label">Workspace</span></button>
+    <button class="nav" data-view="history"><span class="ico">◷</span><span class="label">Recent queries</span></button>
+    <button class="nav" data-view="about"><span class="ico">ⓘ</span><span class="label">How it works</span></button>
+    <a class="nav" href="/docs" target="_blank"><span class="ico">▤</span><span class="label">API docs</span></a>
+    <div class="side-note"><div style="font-size:21px">✧</div><b>From question to insight</b><span style="font-size:11px">Upload a dataset, ask naturally, and inspect the SQL behind every answer.</span></div>
+  </aside>
+  <main class="main">
+    <div class="page-head"><div><div class="eyebrow">Your personal data analyst</div><h1>Make your data <span style="color:#958dff">answer back.</span></h1><p>Turn plain English into safe, executable DuckDB queries. No SQL expertise needed.</p></div><div class="pill">CSV · Excel · Parquet</div></div>
+    <section class="workspace" id="homeView">
+      <div class="primary">
+        <div class="card hero">
+          <div class="hero-row"><div class="hero-icon">▤</div><div><h2>Meet your AI data analyst</h2><p>Explore datasets with natural language. Generate SQL, execute it against your uploaded data, and see the results instantly.</p></div></div>
+          <div class="features">
+            <div class="feature"><span class="ficon">✦</span><div><b>Natural language</b><small>Ask in your own words</small></div></div>
+            <div class="feature"><span class="ficon">⌘</span><div><b>SQL generation</b><small>Gemini + DuckDB</small></div></div>
+            <div class="feature"><span class="ficon">▥</span><div><b>Transparent results</b><small>Inspect the SQL output</small></div></div>
+          </div>
+        </div>
+        <section class="card">
+          <h3 class="section-title"><span class="step">1</span> Upload your dataset <span class="badge" style="margin-left:auto">Max 20 MB</span></h3>
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls,.parquet" hidden>
+          <div class="upload-zone" id="dropZone" role="button" tabindex="0" aria-label="Choose a dataset file"><div class="upload-symbol">⇧</div><strong>Drop your file here, or <span class="browse">browse files</span></strong><p>CSV, XLSX, XLS or Parquet · Your data is loaded for this session</p></div>
+          <div class="file-meta" id="fileMeta"><div class="file-icon">▤</div><div class="file-text"><b id="fileName">dataset.csv</b><small id="fileDetails">Dataset ready</small></div><button class="text-btn" id="removeFile" title="Remove dataset">✕</button></div>
+          <div id="uploadStatus" class="status"></div>
+        </section>
+        <section class="card" id="datasetPreviewCard">
+          <div class="result-head">
+            <h3>Dataset preview <span class="badge" style="margin-left:8px">First 10 rows</span></h3>
+            <span id="datasetPreviewMeta" style="color:var(--muted);font-size:12px">Upload a dataset to preview it</span>
+          </div>
+          <div id="datasetPreview"><div class="empty"><b>No dataset loaded</b><small>The first 10 rows of your uploaded file will stay here while you explore query results.</small></div></div>
+        </section>
+        <section class="card">
+          <h3 class="section-title"><span class="step">2</span> Ask a question</h3>
+          <textarea id="question" rows="3" placeholder="e.g. Which product sold the most, and how many units were sold?"></textarea>
+          <div class="query-tools"><label class="select-wrap">Query type <select id="queryType" aria-label="Query type"><option value="Auto">✦ Auto detect</option><option value="Aggregation">Aggregation</option><option value="Comparison">Comparison</option><option value="Ranking">Ranking</option><option value="Filtering">Filtering</option></select></label><button class="primary-btn" id="runQuery" disabled>➤ &nbsp; Run query <span style="margin-left:8px">→</span></button></div>
+          <div class="examples"><button class="chip" data-query="Show the first 10 rows">Preview data</button><button class="chip" data-query="Which product has the highest quantity_sold?">Top-selling product</button><button class="chip" data-query="What is the average price?">Average price</button><button class="chip" data-query="Show products where price is greater than 5000">Filter rows</button></div>
+          <div id="queryStatus" class="status"></div>
+        </section>
+        <section class="card">
+          <div class="result-head"><h3>Query results</h3><div class="result-actions"><button class="secondary-btn" id="downloadCsv" disabled>↓ Export CSV</button><button class="secondary-btn" id="clearResults">Clear</button></div></div>
+          <div id="resultSummary" class="result-summary"></div>
+          <div id="results"><div class="empty"><div class="robot">✧</div><b>Your insights will appear here</b><small>Upload a dataset and run your first query to get started.</small></div></div>
+          <div id="sqlBox"></div>
+        </section>
+      </div>
+      <aside class="right-col">
+        <section class="card">
+          <div class="side-title"><span>◉ Dataset overview</span><span class="badge" id="datasetBadge">No file</span></div>
+          <div id="datasetEmpty" style="color:var(--muted);font-size:12px;padding:8px 0 12px">Upload a file to inspect its columns and preview your data.</div>
+          <div id="datasetInfo" style="display:none"><div class="file-meta show" style="margin:0"><div class="file-icon">▤</div><div class="file-text"><b id="sideFileName">dataset.csv</b><small id="sideFileType">Uploaded dataset</small></div></div><div class="metric-grid"><div class="metric"><b id="columnCount">—</b><small>Columns</small></div><div class="metric"><b id="rowCount">—</b><small>Preview rows</small></div><div class="metric"><b id="formatType">—</b><small>Format</small></div></div></div>
+        </section>
+        <section class="card schema-card">
+          <div class="side-title">Table schema <span class="badge" id="schemaBadge">0 columns</span></div>
+          <div id="schemaContent" style="color:var(--muted);font-size:12px">Your column names and data types will appear here after upload.</div>
+        </section>
+        <section class="card">
+          <div class="side-title">Try asking <span style="color:#ffca73">✦</span></div>
+          <div class="examples-list"><button class="chip" data-query="Which product has the highest quantity_sold?">Best-selling product</button><button class="chip" data-query="Calculate the average price by category">Average by category</button><button class="chip" data-query="Show the top 5 products by quantity_sold">Top 5 ranking</button><button class="chip" data-query="Show all rows where price is greater than 5000">Filter by price</button><button class="chip" data-query="Count the number of rows in the dataset">Count records</button></div>
+        </section>
+        <section class="card"><div class="tip"><span>ⓘ</span><div><b>Helpful tip</b>Use the exact meaning of your columns when possible. If a question is ambiguous, the assistant can ask you to clarify before running SQL.</div></div></section>
+      </aside>
+    </section>
+    <section class="card" id="historyView" hidden><h3 class="section-title">Recent queries</h3><div id="historyList" class="empty"><b>No queries yet</b><small>Your completed queries will be saved here during this browser session.</small></div></section>
+    <section class="card" id="aboutView" hidden><h3 class="section-title">How QueryPilot works</h3><div class="tip"><span>1.</span><div><b>Upload</b>CSV, Excel, or Parquet data is loaded into an in-memory DuckDB table.</div></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="tip"><span>2.</span><div><b>Understand</b>Gemini maps your question to your available columns and asks for clarification when needed.</div></div><hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><div class="tip"><span>3.</span><div><b>Execute</b>The backend validates a read-only SQL statement, executes it, and returns tabular results.</div></div><p style="color:var(--muted);font-size:12px;margin-top:20px">Note: Query-type selection adds guidance to the natural-language prompt; the current API contract remains unchanged.</p></section>
+    <div class="footer">QueryPilot AI · Built with FastAPI, Gemini & DuckDB</div>
+  </main>
+</div>
+</div>
+<script>
+(() => {
+  const API_BASE = window.QUERY_API_BASE || ""; // Set this if frontend and API are hosted separately.
+  const $ = id => document.getElementById(id);
+  let uploadId = null, currentFile = null, currentRows = [], queryHistory = [], pendingClarification = false;
+  const fileInput=$("fileInput"), dropZone=$("dropZone"), runButton=$("runQuery");
+  function setStatus(id, message="", type="info"){const el=$(id);el.textContent=message;el.className="status"+(message?" show "+type:"");}
+  async function api(path, options={}) {
+    const response = await fetch(API_BASE + path, options);
+    let data; try { data=await response.json(); } catch { data={detail:"The API returned an unreadable response."}; }
+    if(!response.ok) throw new Error(data.detail || data.message || `Request failed (${response.status})`);
+    return data;
+  }
+  function bytes(n){if(n<1024)return `${n} B`;if(n<1048576)return `${(n/1024).toFixed(1)} KB`;return `${(n/1048576).toFixed(2)} MB`;}
+  function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+  function fileFormat(name){return (name.split(".").pop()||"").toUpperCase();}
+  function resetDatasetUI(){ $("fileMeta").classList.remove("show");$("datasetInfo").style.display="none";$("datasetEmpty").style.display="block";$("datasetBadge").textContent="No file";$("schemaBadge").textContent="0 columns";$("schemaContent").textContent="Your column names and data types will appear here after upload.";runButton.disabled=true;}
+  async function upload(file){
+    if(!file)return;
+    const ext=file.name.split(".").pop().toLowerCase();
+    if(!["csv","xlsx","xls","parquet"].includes(ext)){setStatus("uploadStatus","Unsupported file type. Please choose CSV, XLSX, XLS, or Parquet.","error");return;}
+    if(file.size>20*1024*1024){setStatus("uploadStatus","This file exceeds the 20 MB limit.","error");return;}
+    const previousUploadId=uploadId;
+    runButton.disabled=true;setStatus("uploadStatus","Uploading and reading your dataset…","info");
+    const form=new FormData();form.append("file",file);
+    try{
+      const data=await api("/upload",{method:"POST",body:form});
+      uploadId=data.upload_id;currentFile=file;pendingClarification=false;
+      if(previousUploadId && previousUploadId!==uploadId){try{await api(`/upload/${encodeURIComponent(previousUploadId)}`,{method:"DELETE"});}catch{}}
+      $("fileMeta").classList.add("show");$("fileName").textContent=data.filename;$("fileDetails").textContent=`${bytes(file.size)} · ${data.columns.length} columns`;
+      $("sideFileName").textContent=data.filename;$("sideFileType").textContent=`${bytes(file.size)} · ${fileFormat(file.name)}`;
+      $("columnCount").textContent=data.columns.length;$("rowCount").textContent=data.preview.length;$("formatType").textContent=fileFormat(file.name);
+      $("datasetInfo").style.display="block";$("datasetEmpty").style.display="none";$("datasetBadge").textContent="Connected";
+      $("schemaBadge").textContent=`${data.columns.length} columns`;
+      $("schemaContent").innerHTML=`<div class="schema-wrap"><table class="schema-table"><thead><tr><th>Column</th><th>Type</th></tr></thead><tbody>${data.columns.map(c=>`<tr><td>${escapeHtml(c.column_name)}</td><td>${escapeHtml(c.column_type)}</td></tr>`).join("")}</tbody></table></div>`;
+      setStatus("uploadStatus",`Dataset ready. Found ${data.columns.length} columns. You can now ask a question.`,"success");
+      renderDatasetPreview(data.preview||[]);
+      currentRows=[];
+      $("results").innerHTML='<div class="empty"><div class="robot">✧</div><b>Your insights will appear here</b><small>Run a query to see results for this dataset.</small></div>';
+      $("resultSummary").innerHTML="";$("sqlBox").innerHTML="";$("downloadCsv").disabled=true;
+      runButton.disabled=false;$("question").focus();
+    }catch(err){
+      setStatus("uploadStatus",err.message,"error");
+      runButton.disabled=!uploadId;
+    }
+  }
+  dropZone.addEventListener("click",()=>fileInput.click());dropZone.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}});
+  fileInput.addEventListener("change",()=>{if(fileInput.files[0])upload(fileInput.files[0]);fileInput.value="";});
+  ["dragenter","dragover"].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.add("drag");}));
+  ["dragleave","drop"].forEach(ev=>dropZone.addEventListener(ev,e=>{e.preventDefault();dropZone.classList.remove("drag");}));
+  dropZone.addEventListener("drop",e=>upload(e.dataTransfer.files[0]));
+  $("removeFile").addEventListener("click",async()=>{if(uploadId){try{await api(`/upload/${encodeURIComponent(uploadId)}`,{method:"DELETE"});}catch{}}uploadId=null;currentFile=null;pendingClarification=false;currentRows=[];resetDatasetUI();setStatus("uploadStatus","Dataset removed from this session.","info");$("datasetPreview").innerHTML='<div class="empty"><b>No dataset loaded</b><small>The first 10 rows of your uploaded file will stay here while you explore query results.</small></div>';$("datasetPreviewMeta").textContent="Upload a dataset to preview it";$("results").innerHTML='<div class="empty"><div class="robot">✧</div><b>Your insights will appear here</b><small>Upload a dataset and run your first query to get started.</small></div>';$("sqlBox").innerHTML="";$("resultSummary").innerHTML="";$("downloadCsv").disabled=true;});
+  function renderDatasetPreview(rows){
+    const previewRows=rows||[];
+    if(!previewRows.length){
+      $("datasetPreview").innerHTML='<div class="empty"><b>No preview rows available</b><small>The file uploaded successfully, but the API did not return preview rows.</small></div>';
+      $("datasetPreviewMeta").textContent="0 rows";
+      return;
+    }
+    const cols=Object.keys(previewRows[0]);
+    $("datasetPreview").innerHTML=`<div class="table-wrap"><table class="data-table"><thead><tr>${cols.map(c=>`<th>${escapeHtml(c)}</th>`).join("")}</tr></thead><tbody>${previewRows.map(row=>`<tr>${cols.map(c=>`<td>${escapeHtml(typeof row[c]==="object"&&row[c]!==null?JSON.stringify(row[c]):row[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    $("datasetPreviewMeta").textContent=`${previewRows.length} preview row${previewRows.length===1?"":"s"} · ${cols.length} columns`;
+  }
+  function renderTable(rows,title="",preview=false){
+    currentRows=rows||[];
+    if(!currentRows.length){$("results").innerHTML='<div class="empty"><b>No rows returned</b><small>The query ran successfully but did not match any records.</small></div>';return;}
+    const cols=Object.keys(currentRows[0]);
+    $("results").innerHTML=`<div class="table-wrap"><table class="data-table"><thead><tr>${cols.map(c=>`<th>${escapeHtml(c)}</th>`).join("")}</tr></thead><tbody>${currentRows.map(row=>`<tr>${cols.map(c=>`<td>${escapeHtml(typeof row[c]==="object"&&row[c]!==null?JSON.stringify(row[c]):row[c])}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    if(!preview)$("resultSummary").innerHTML=`<span class="stat"><b>${currentRows.length}</b> row${currentRows.length===1?"":"s"} returned</span><span class="stat"><b>${cols.length}</b> column${cols.length===1?"":"s"}</span>`;
+  }
+  function showSql(sql){$("sqlBox").innerHTML=sql?`<div class="sql-box"><div class="sql-top"><span>⌘ Generated DuckDB SQL</span><button class="text-btn" id="copySql">Copy SQL</button></div><pre>${escapeHtml(sql)}</pre></div>`:"";const b=$("copySql");if(b)b.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(sql);b.textContent="Copied!";}catch{b.textContent="Copy unavailable";}});}
+  async function runQuery(){
+    const question=$("question").value.trim();if(!uploadId){setStatus("queryStatus","Upload a dataset first.","error");return;}if(!question){setStatus("queryStatus","Enter a question to query your data.","error");$("question").focus();return;}
+    runButton.disabled=true;runButton.textContent="Working…";setStatus("queryStatus",pendingClarification?"Resolving your clarification…":"Understanding your question and running SQL…","info");
+    try{
+      const mode=$("queryType").value;
+      const prompt=mode==="Auto"?question:`[Query type: ${mode}. Use this as guidance only; prioritize the user's actual request.]\n${question}`;
+      const data=await api("/query",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({upload_id:uploadId,question:prompt})});
+      if(data.action==="clarification"){
+        pendingClarification=true;
+        setStatus("queryStatus",`Clarification needed: ${data.clarification}  — Type your answer in the question box and run again. Type “cancel” to abandon this clarification.`,"info");
+        $("question").value="";$("question").placeholder="Type your clarification answer here…";$("question").focus();
+        $("resultSummary").innerHTML="";showSql("");return;
+      }
+      if(data.action==="cancelled"){pendingClarification=false;setStatus("queryStatus",data.message||"Clarification cancelled.","info");return;}
+      pendingClarification=false;$("question").placeholder="Ask a question about your data…";
+      renderTable(data.rows||[]);showSql(data.sql||"");
+      setStatus("queryStatus",`Query completed successfully${data.sql?" · SQL generated and executed":""}.`,"success");
+      queryHistory.unshift({question,sql:data.sql||"",rows:data.rows||[],time:new Date().toLocaleTimeString()});renderHistory();
+      $("downloadCsv").disabled=!(data.rows||[]).length;
+    }catch(err){setStatus("queryStatus",err.message,"error");}
+    finally{runButton.disabled=!uploadId;runButton.innerHTML='➤ &nbsp; Run query <span style="margin-left:8px">→</span>';}
+  }
+  runButton.addEventListener("click",runQuery);$("question").addEventListener("keydown",e=>{if((e.ctrlKey||e.metaKey)&&e.key==="Enter")runQuery();});
+  document.querySelectorAll("[data-query]").forEach(btn=>btn.addEventListener("click",()=>{$("question").value=btn.dataset.query;$("question").focus();}));
+  $("clearResults").addEventListener("click",()=>{currentRows=[];$("results").innerHTML='<div class="empty"><b>Results cleared</b><small>Run a query to display results here.</small></div>';$("resultSummary").innerHTML="";$("sqlBox").innerHTML="";$("downloadCsv").disabled=true;setStatus("queryStatus");});
+  $("downloadCsv").addEventListener("click",()=>{if(!currentRows.length)return;const cols=Object.keys(currentRows[0]);const csv=[cols,...currentRows.map(r=>cols.map(c=>r[c]))].map(row=>row.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\r\n");const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));const a=document.createElement("a");a.href=url;a.download="query-results.csv";a.click();URL.revokeObjectURL(url);});
+  function renderHistory(){const el=$("historyList");if(!queryHistory.length){el.className="empty";el.innerHTML="<b>No queries yet</b><small>Your completed queries will be saved here during this browser session.</small>";return;}el.className="";el.innerHTML=queryHistory.map((h,i)=>`<div style="padding:13px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:12px"><b>${escapeHtml(h.question)}</b><small style="color:var(--muted)">${h.time}</small></div><div style="color:var(--muted);font-size:12px;margin:6px 0">${h.rows.length} rows returned</div><button class="secondary-btn" data-history="${i}">View SQL</button></div>`).join("");el.querySelectorAll("[data-history]").forEach(b=>b.addEventListener("click",()=>{const h=queryHistory[Number(b.dataset.history)];$("homeView").hidden=false;$("historyView").hidden=true;$("aboutView").hidden=true;renderTable(h.rows);showSql(h.sql);$("question").value=h.question;document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.view==="home"));}));}
+  document.querySelectorAll("[data-view]").forEach(btn=>btn.addEventListener("click",()=>{const view=btn.dataset.view; $("homeView").hidden=view!=="home";$("historyView").hidden=view!=="history";$("aboutView").hidden=view!=="about";document.querySelectorAll("[data-view]").forEach(n=>n.classList.toggle("active",n===btn));if(view==="history")renderHistory();}));
+  // Check whether the API is reachable without treating a missing session as an error.
+  api("/").then(()=>{}).catch(()=>{setStatus("uploadStatus","API connection could not be confirmed. Start your FastAPI server, then refresh this page.","error");});
+})();
+</script>
+</body>
+</html>

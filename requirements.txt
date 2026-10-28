@@ -1,0 +1,8 @@
+streamlit>=1.40
+duckdb>=1.1
+pandas>=2.2
+pyarrow
+openpyxl
+xlrd
+google-genai>=1.0
+pydantic>=2
